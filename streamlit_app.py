@@ -24,7 +24,6 @@ df_2023, df_2024 = load_data()
 # 기본 설정
 MEMBER_OPTIONS = ['일반', '오프셋', '학위논문', '전체']
 TYPE_OPTIONS = ['신규', '기존', '신규+기존']
-MONTH_ORDER = ["4", "5", "6", "7", "8", "9", "10", "11", "12", "1", "2", "3"]
 
 # 컬럼 설정
 member_column_2023 = df_2023.columns[0]
@@ -88,40 +87,47 @@ for metric in metrics:
     chart_data = []
     for month in [4,5,6,7,8,9,10,11,12,1,2,3]:
         if month >= 4:
+            fiscal_month = month - 3  # 4월은 1, 5월은 2, ..., 12월은 9
+        else:
+            fiscal_month = month + 9  # 1월은 10, 2월은 11, 3월은 12
+
+        if month >= 4:
             col_2023 = f"2023_{month}_{metric}"
             col_2024 = f"2024_{month}_{metric}"
         else:
             col_2023 = f"2024_{month}_{metric}"
             col_2024 = f"2025_{month}_{metric}"
 
-        # 2023 회계연도 데이터
         if col_2023 in filtered_2023.columns:
             value_2023 = pd.to_numeric(filtered_2023[col_2023], errors='coerce').sum()
             chart_data.append({
-                "월": str(month),
+                "회계월": fiscal_month,
+                "표시월": f"{month}월",
                 "구분": "2023회계연도",
                 "값": value_2023,
                 "지표": metric
             })
 
-        # 2024 회계연도 데이터
         if col_2024 in filtered_2024.columns:
             value_2024 = pd.to_numeric(filtered_2024[col_2024], errors='coerce').sum()
             chart_data.append({
-                "월": str(month),
+                "회계월": fiscal_month,
+                "표시월": f"{month}월",
                 "구분": "2024회계연도",
                 "값": value_2024,
                 "지표": metric
             })
 
     chart_df = pd.DataFrame(chart_data)
+    chart_df = chart_df.sort_values("회계월")
+
     fig = px.line(
         chart_df,
-        x="월",
+        x="표시월",
         y="값",
         color="구분",
         markers=True,
         title=f"{metric} 월별 추이",
-        category_orders={"월": MONTH_ORDER}
+        category_orders={"표시월": [f"{m}월" for m in [4,5,6,7,8,9,10,11,12,1,2,3]]}
     )
     st.plotly_chart(fig, use_container_width=True)
