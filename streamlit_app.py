@@ -84,6 +84,7 @@ st.subheader("📈 월별 추이 비교 (2023 vs 2024)")
 for metric in metrics:
     chart_data = []
     for month in MONTH_ORDER:
+        # 2023 회계연도
         if month >= 4:
             col_2023 = f"2023_{month}_{metric}"
             col_2024 = f"2024_{month}_{metric}"
@@ -91,20 +92,22 @@ for metric in metrics:
             col_2023 = f"2024_{month}_{metric}"
             col_2024 = f"2025_{month}_{metric}"
 
+        # 2023 회계연도 데이터 가져오기
         if col_2023 in filtered_2023.columns:
             value_2023 = pd.to_numeric(filtered_2023[col_2023], errors='coerce').sum()
             chart_data.append({
                 "월": month,
-                "구분": "2023",
+                "구분": "2023회계연도",
                 "값": value_2023,
                 "지표": metric
             })
 
+        # 2024 회계연도 데이터 가져오기
         if col_2024 in filtered_2024.columns:
             value_2024 = pd.to_numeric(filtered_2024[col_2024], errors='coerce').sum()
             chart_data.append({
                 "월": month,
-                "구분": "2024",
+                "구분": "2024회계연도",
                 "값": value_2024,
                 "지표": metric
             })
