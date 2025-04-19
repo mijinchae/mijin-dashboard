@@ -113,5 +113,13 @@ for metric in metrics:
             })
 
     chart_df = pd.DataFrame(chart_data)
-    fig = px.line(chart_df, x="월", y="값", color="구분", markers=True, title=f"{metric} 월별 추이", category_orders={"월": MONTH_ORDER})
+    fig = px.line(
+    chart_df,
+    x="월",
+    y="값",
+    color="구분",
+    markers=True,
+    title=f"{metric} 월별 추이",
+    category_orders={"월": MONTH_ORDER}  # <-- 이 줄 추가!
+)
     st.plotly_chart(fig, use_container_width=True)
