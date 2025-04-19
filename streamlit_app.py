@@ -94,7 +94,16 @@ if selected_member == '전체':
         '매출': list(member_sales.values())
     })
 
-    colors = ["#A7D3F5", "#D4C1EC", "#C7E8C9"]  # 파스텔 하늘, 연보라, 연두
+    colors = ["#A7D3F5", "#D4C1EC", "#C7E8C9"]
+
+    fig = px.pie(
+        sales_df,
+        names='구분',
+        values='매출',
+        hole=0.5,
+        color_discrete_sequence=colors
+    )
+
 else:
     type_sales = {}
     for t in ['신규', '기존']:
@@ -106,15 +115,20 @@ else:
         '매출': list(type_sales.values())
     })
 
-    colors = ["#A7D3F5", "#D4C1EC"]  # 파스텔 하늘, 연보라
+    color_map = {
+        '신규': '#A7D3F5',
+        '기존': '#D4C1EC'
+    }
 
-fig = px.pie(
-    sales_df,
-    names='구분',
-    values='매출',
-    hole=0.5,
-    color_discrete_sequence=colors
-)
+    fig = px.pie(
+        sales_df,
+        names='구분',
+        values='매출',
+        hole=0.5,
+        color='구분',
+        color_discrete_map=color_map
+    )
+
 fig.update_layout(
     title_x=0.5,
     showlegend=True
