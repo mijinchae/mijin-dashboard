@@ -24,7 +24,7 @@ df_2023, df_2024 = load_data()
 # 기본 설정
 MEMBER_OPTIONS = ['일반', '오프셋', '학위논문', '전체']
 TYPE_OPTIONS = ['신규', '기존', '신규+기존']
-MONTH_ORDER = [4,5,6,7,8,9,10,11,12,1,2,3]
+MONTH_ORDER = ["4", "5", "6", "7", "8", "9", "10", "11", "12", "1", "2", "3"]
 
 # 컬럼 설정
 member_column_2023 = df_2023.columns[0]
@@ -49,6 +49,7 @@ def filter_data(df, member_col, type_col):
 filtered_2023 = filter_data(df_2023, member_column_2023, type_column_2023)
 filtered_2024 = filter_data(df_2024, member_column_2024, type_column_2024)
 
+# 총합 계산
 total_2023 = {
     '명': filtered_2023['2023_총합_명'].sum(),
     '건': filtered_2023['2023_총합_건'].sum(),
@@ -60,6 +61,7 @@ total_2024 = {
     '매출': filtered_2024['2024_총합_매출'].sum()
 }
 
+# 📊 총합 변화 카드 스타일 출력
 st.subheader("📊 총합 변화 (2023 → 2024)")
 
 kpi_cols = st.columns(3)
@@ -79,12 +81,12 @@ for idx, metric in enumerate(metrics):
         </div>
         """, unsafe_allow_html=True)
 
+# 📈 월별 추이 그래프
 st.subheader("📈 월별 추이 비교 (2023 vs 2024)")
 
 for metric in metrics:
     chart_data = []
-    for month in MONTH_ORDER:
-        # 2023 회계연도
+    for month in [4,5,6,7,8,9,10,11,12,1,2,3]:
         if month >= 4:
             col_2023 = f"2023_{month}_{metric}"
             col_2024 = f"2024_{month}_{metric}"
@@ -92,21 +94,21 @@ for metric in metrics:
             col_2023 = f"2024_{month}_{metric}"
             col_2024 = f"2025_{month}_{metric}"
 
-        # 2023 회계연도 데이터 가져오기
+        # 2023 회계연도 데이터
         if col_2023 in filtered_2023.columns:
             value_2023 = pd.to_numeric(filtered_2023[col_2023], errors='coerce').sum()
             chart_data.append({
-                "월": month,
+                "월": str(month),
                 "구분": "2023회계연도",
                 "값": value_2023,
                 "지표": metric
             })
 
-        # 2024 회계연도 데이터 가져오기
+        # 2024 회계연도 데이터
         if col_2024 in filtered_2024.columns:
             value_2024 = pd.to_numeric(filtered_2024[col_2024], errors='coerce').sum()
             chart_data.append({
-                "월": month,
+                "월": str(month),
                 "구분": "2024회계연도",
                 "값": value_2024,
                 "지표": metric
@@ -114,12 +116,12 @@ for metric in metrics:
 
     chart_df = pd.DataFrame(chart_data)
     fig = px.line(
-    chart_df,
-    x="월",
-    y="값",
-    color="구분",
-    markers=True,
-    title=f"{metric} 월별 추이",
-    category_orders={"월": MONTH_ORDER}  # <-- 이 줄 추가!
-)
+        chart_df,
+        x="월",
+        y="값",
+        color="구분",
+        markers=True,
+        title=f"{metric} 월별 추이",
+        category_orders={"월": MONTH_ORDER}
+    )
     st.plotly_chart(fig, use_container_width=True)
