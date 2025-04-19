@@ -84,8 +84,12 @@ st.subheader("📈 월별 추이 비교 (2023 vs 2024)")
 for metric in metrics:
     chart_data = []
     for month in MONTH_ORDER:
-        col_2023 = f"2023_{month}_{metric}"
-        col_2024 = f"2024_{month}_{metric}"
+        if month >= 4:
+            col_2023 = f"2023_{month}_{metric}"
+            col_2024 = f"2024_{month}_{metric}"
+        else:
+            col_2023 = f"2024_{month}_{metric}"
+            col_2024 = f"2025_{month}_{metric}"
 
         if col_2023 in filtered_2023.columns:
             value_2023 = pd.to_numeric(filtered_2023[col_2023], errors='coerce').sum()
