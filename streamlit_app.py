@@ -74,9 +74,9 @@ for idx, metric in enumerate(metrics):
 
     with kpi_cols[idx]:
         st.markdown(f"""
-        <div style="padding:1rem; border-radius:10px; background-color:#1a1a1a; text-align:center">
-            <div style="font-size:14px; color:lightgray">2023: {int(prev):,} → 2024: {int(curr):,}</div>
-            <div style="font-size:24px; font-weight:bold; color:white; margin-top:0.5rem">{diff:+,} {color}</div>
+        <div style="padding:1rem; border-radius:10px; background-color:#f9f9f9; text-align:center">
+            <div style="font-size:14px; color:gray">2023: {int(prev):,} → 2024: {int(curr):,}</div>
+            <div style="font-size:24px; font-weight:bold; color:black; margin-top:0.5rem">{diff:+,} {color}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -93,6 +93,8 @@ if selected_member == '전체':
         '구분': list(member_sales.keys()),
         '매출': list(member_sales.values())
     })
+
+    colors = ["#1f77b4", "#2ca02c", "#ff7f0e"]  # 파랑, 초록, 주황
 else:
     type_sales = {}
     for t in ['신규', '기존']:
@@ -104,8 +106,7 @@ else:
         '매출': list(type_sales.values())
     })
 
-# 블루톤 색상 설정
-colors = ["#1f77b4", "#3399ff", "#66b2ff"]
+    colors = ["#005eff", "#ff4040"]  # 파랑, 빨강
 
 fig = px.pie(
     sales_df,
@@ -115,11 +116,6 @@ fig = px.pie(
     color_discrete_sequence=colors
 )
 fig.update_layout(
-    plot_bgcolor="black",
-    paper_bgcolor="black",
-    font_color="white",
-    title_font_color="white",
-    legend_font_color="white",
     title_x=0.5,
     showlegend=True
 )
@@ -178,12 +174,8 @@ for metric in metrics:
     )
 
     fig.update_layout(
-        plot_bgcolor="black",
-        paper_bgcolor="black",
-        font_color="white",
-        title_font_color="white",
-        legend_font_color="white",
-        title_x=0.5
+        title_x=0.5,
+        showlegend=True
     )
 
     st.plotly_chart(fig, use_container_width=True)
