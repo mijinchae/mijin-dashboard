@@ -31,9 +31,9 @@ type_column_2023 = df_2023.columns[1]
 member_column_2024 = df_2024.columns[0]
 type_column_2024 = df_2024.columns[1]
 
-# 회원/구분 선택
-selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS)
-selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS)
+# 회원/구분 선택 (초기 세팅 변경)
+selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS, index=3)  # '전체' 기본
+selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS, index=2)    # '신규+기존' 기본
 
 def filter_data(df, member_col, type_col):
     if selected_member == '전체':
@@ -80,27 +80,36 @@ for idx, metric in enumerate(metrics):
         </div>
         """, unsafe_allow_html=True)
 
-# 🧩 회원구분별 매출 비율 (2024)
-st.subheader("🧩 회원구분별 매출 비율 (2024)")
+# 🧩 매출 비율 (2024)
+st.subheader("🧩 매출 비율 (2024)")
 
-# 회원 구분별 매출 합계 계산
-member_sales = {}
-for member in ['일반', '오프셋', '학위논문']:
-    filtered_member = filtered_2024[filtered_2024[member_column_2024] == member]
-    member_sales[member] = filtered_member['2024_총합_매출'].sum()
+if selected_member == '전체':
+    member_sales = {}
+    for member in ['일반', '오프셋', '학위논문']:
+        filtered_member = filtered_2024[filtered_2024[member_column_2024] == member]
+        member_sales[member] = filtered_member['2024_총합_매출'].sum()
 
-sales_df = pd.DataFrame({
-    '회원구분': list(member_sales.keys()),
-    '매출': list(member_sales.values())
-})
+    sales_df = pd.DataFrame({
+        '구분': list(member_sales.keys()),
+        '매출': list(member_sales.values())
+    })
+else:
+    type_sales = {}
+    for t in ['신규', '기존']:
+        filtered_type = filtered_2024[(filtered_2024[member_column_2024] == selected_member) & (filtered_2024[type_column_2024] == t)]
+        type_sales[t] = filtered_type['2024_총합_매출'].sum()
+
+    sales_df = pd.DataFrame({
+        '구분': list(type_sales.keys()),
+        '매출': list(type_sales.values())
+    })
 
 # 블루톤 색상 설정
 colors = ["#1f77b4", "#3399ff", "#66b2ff"]
 
-# 도넛 차트 만들기
 fig = px.pie(
     sales_df,
-    names='회원구분',
+    names='구분',
     values='매출',
     hole=0.5,
     color_discrete_sequence=colors
