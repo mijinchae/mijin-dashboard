@@ -74,11 +74,48 @@ for idx, metric in enumerate(metrics):
 
     with kpi_cols[idx]:
         st.markdown(f"""
-        <div style="padding:1rem; border-radius:10px; background-color:#f9f9f9; text-align:center">
-            <div style="font-size:14px; color:gray">2023: {int(prev):,} → 2024: {int(curr):,}</div>
-            <div style="font-size:24px; font-weight:bold; color:black; margin-top:0.5rem">{diff:+,} {color}</div>
+        <div style="padding:1rem; border-radius:10px; background-color:#1a1a1a; text-align:center">
+            <div style="font-size:14px; color:lightgray">2023: {int(prev):,} → 2024: {int(curr):,}</div>
+            <div style="font-size:24px; font-weight:bold; color:white; margin-top:0.5rem">{diff:+,} {color}</div>
         </div>
         """, unsafe_allow_html=True)
+
+# 🧩 회원구분별 매출 비율 (2024)
+st.subheader("🧩 회원구분별 매출 비율 (2024)")
+
+# 회원 구분별 매출 합계 계산
+member_sales = {}
+for member in ['일반', '오프셋', '학위논문']:
+    filtered_member = filtered_2024[filtered_2024[member_column_2024] == member]
+    member_sales[member] = filtered_member['2024_총합_매출'].sum()
+
+sales_df = pd.DataFrame({
+    '회원구분': list(member_sales.keys()),
+    '매출': list(member_sales.values())
+})
+
+# 블루톤 색상 설정
+colors = ["#1f77b4", "#3399ff", "#66b2ff"]
+
+# 도넛 차트 만들기
+fig = px.pie(
+    sales_df,
+    names='회원구분',
+    values='매출',
+    hole=0.5,
+    color_discrete_sequence=colors
+)
+fig.update_layout(
+    plot_bgcolor="black",
+    paper_bgcolor="black",
+    font_color="white",
+    title_font_color="white",
+    legend_font_color="white",
+    title_x=0.5,
+    showlegend=True
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 # 📈 월별 추이 그래프
 st.subheader("📈 월별 추이 비교 (2023 vs 2024)")
@@ -87,9 +124,9 @@ for metric in metrics:
     chart_data = []
     for month in [4,5,6,7,8,9,10,11,12,1,2,3]:
         if month >= 4:
-            fiscal_month = month - 3  # 4월은 1, 5월은 2, ..., 12월은 9
+            fiscal_month = month - 3
         else:
-            fiscal_month = month + 9  # 1월은 10, 2월은 11, 3월은 12
+            fiscal_month = month + 9
 
         if month >= 4:
             col_2023 = f"2023_{month}_{metric}"
@@ -130,4 +167,14 @@ for metric in metrics:
         title=f"{metric} 월별 추이",
         category_orders={"표시월": [f"{m}월" for m in [4,5,6,7,8,9,10,11,12,1,2,3]]}
     )
+
+    fig.update_layout(
+        plot_bgcolor="black",
+        paper_bgcolor="black",
+        font_color="white",
+        title_font_color="white",
+        legend_font_color="white",
+        title_x=0.5
+    )
+
     st.plotly_chart(fig, use_container_width=True)
