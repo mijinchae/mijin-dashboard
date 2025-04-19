@@ -32,8 +32,8 @@ member_column_2024 = df_2024.columns[0]
 type_column_2024 = df_2024.columns[1]
 
 # 회원/구분 선택 (초기 세팅 변경)
-selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS, index=3)  # '전체' 기본
-selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS, index=2)    # '신규+기존' 기본
+selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS, index=3)
+selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS, index=2)
 
 def filter_data(df, member_col, type_col):
     if selected_member == '전체':
@@ -94,7 +94,7 @@ if selected_member == '전체':
         '매출': list(member_sales.values())
     })
 
-    colors = ["#1f77b4", "#2ca02c", "#ff7f0e"]  # 파랑, 초록, 주황
+    colors = ["#A7D3F5", "#D4C1EC", "#C7E8C9"]  # 파스텔 하늘, 연보라, 연두
 else:
     type_sales = {}
     for t in ['신규', '기존']:
@@ -106,7 +106,7 @@ else:
         '매출': list(type_sales.values())
     })
 
-    colors = ["#005eff", "#ff4040"]  # 파랑, 빨강
+    colors = ["#A7D3F5", "#D4C1EC"]  # 파스텔 하늘, 연보라
 
 fig = px.pie(
     sales_df,
