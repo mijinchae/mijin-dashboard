@@ -13,6 +13,7 @@ st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wi
 file_id = "1xzzYbdLy95LGLQgXCgzXVXK-ITYdlk6b"
 url = f"https://drive.google.com/uc?id={file_id}"
 
+# 파일 로드
 def load_data():
     output = BytesIO()
     gdown.download(url, output, quiet=True)
