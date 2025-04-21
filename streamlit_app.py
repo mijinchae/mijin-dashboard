@@ -13,10 +13,9 @@ st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wi
 file_id = "1vlOddDEvMy1M4aRola3RbZIIxLH8srdh"
 url = f"https://drive.google.com/uc?id={file_id}"
 
-@st.cache_data
 def load_data():
     output = BytesIO()
-    gdown.download(url, output, quiet=False)
+    gdown.download(url, output, quiet=True)
     output.seek(0)
     df = pd.read_excel(output, sheet_name=0)
     return df
