@@ -10,7 +10,7 @@ from io import BytesIO
 st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wide")
 
 # 구글 드라이브 파일 ID
-file_id = "1vlOddDEvMy1M4aRola3RbZIIxLH8srdh"
+file_id = "1xzzYbdLy95LGLQgXCgzXVXK-ITYdlk6b"
 url = f"https://drive.google.com/uc?id={file_id}"
 
 def load_data():
