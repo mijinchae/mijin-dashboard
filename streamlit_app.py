@@ -11,22 +11,32 @@ st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wi
 
 # 구글 드라이브 파일 ID
 file_id = "1xzzYbdLy95LGLQgXCgzXVXK-ITYdlk6b"
-url = f"https://drive.google.com/uc?export=download&id={file_id}"
+# ❗ 여기 URL을 export용으로 수정
+url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
 
-# 파일 로드
+# 파일 로드 함수 (자동 다운로드)
+@st.cache_data
 def load_data():
-    response = requests.get(url)
-    bytes_data = BytesIO(response.content)
-    df = pd.read_excel(bytes_data, sheet_name=0)
-    return df
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # 에러 발생시 잡아줌
+        bytes_data = BytesIO(response.content)
+        df = pd.read_excel(bytes_data, sheet_name=0)
+        return df
+    except Exception as e:
+        st.error(f"❗ 데이터를 불러오는 데 실패했습니다: {e}")
+        st.stop()
 
+# 데이터 로드
 df = load_data()
+
+# ----- 이하 너가 작성한 기존 코드 계속 -----
 
 # 기본 설정
 MEMBER_OPTIONS = ['일반', '오프셋', '학위논문', '전체']
 TYPE_OPTIONS = ['신규', '기존', '신규+기존']
 
-# 회원/구분 선택 (초기 세팅 변경)
+# 회원/구분 선택
 selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS, index=3)
 selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS, index=2)
 
