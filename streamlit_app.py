@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import requests
+import gdown
 from io import BytesIO
 
 # 페이지 설정
@@ -11,13 +11,14 @@ st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wi
 
 # 구글 드라이브 파일 ID
 file_id = "1vlOddDEvMy1M4aRola3RbZIIxLH8srdh"
-url = f"https://drive.google.com/uc?export=download&id={file_id}"
+url = f"https://drive.google.com/uc?id={file_id}"
 
 @st.cache_data
 def load_data():
-    response = requests.get(url)
-    bytes_data = BytesIO(response.content)
-    df = pd.read_excel(bytes_data, sheet_name=0)
+    output = BytesIO()
+    gdown.download(url, output, quiet=False)
+    output.seek(0)
+    df = pd.read_excel(output, sheet_name=0)
     return df
 
 df = load_data()
