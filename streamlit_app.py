@@ -9,55 +9,45 @@ st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wi
 
 # 구글 드라이브 파일 ID
 file_id = "1vlOddDEvMy1M4aRola3RbZIIxLH8srdh"
-
-# 구글 드라이브 다운로드 URL 만들기
 url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
 @st.cache_data
 def load_data():
-    df_2023 = pd.read_excel(url, sheet_name="월별데이터(2023)")
-    df_2024 = pd.read_excel(url, sheet_name="월별데이터(2024)")
-    return df_2023, df_2024
+    df = pd.read_excel(url, sheet_name=0)
+    return df
 
-df_2023, df_2024 = load_data()
+df = load_data()
 
 # 기본 설정
 MEMBER_OPTIONS = ['일반', '오프셋', '학위논문', '전체']
 TYPE_OPTIONS = ['신규', '기존', '신규+기존']
 
-# 컬럼 설정
-member_column_2023 = df_2023.columns[0]
-type_column_2023 = df_2023.columns[1]
-member_column_2024 = df_2024.columns[0]
-type_column_2024 = df_2024.columns[1]
-
 # 회원/구분 선택 (초기 세팅 변경)
 selected_member = st.selectbox("회원 구분을 선택하세요", MEMBER_OPTIONS, index=3)
 selected_type = st.selectbox("신규/기존을 선택하세요", TYPE_OPTIONS, index=2)
 
-def filter_data(df, member_col, type_col):
-    if selected_member == '전체':
-        df_filtered = df[df[type_col].isin(['신규', '기존'])]
-    else:
-        if selected_type == '신규+기존':
-            df_filtered = df[(df[member_col] == selected_member) & (df[type_col].isin(['신규', '기존']))]
-        else:
-            df_filtered = df[(df[member_col] == selected_member) & (df[type_col] == selected_type)]
+# 데이터 필터링 함수
+def filter_data(df, year):
+    df_filtered = df[df['연도'] == year]
+    if selected_member != '전체':
+        df_filtered = df_filtered[df_filtered['주문'] == selected_member]
+    if selected_type != '신규+기존':
+        df_filtered = df_filtered[df_filtered['구분'] == selected_type]
     return df_filtered.reset_index(drop=True)
 
-filtered_2023 = filter_data(df_2023, member_column_2023, type_column_2023)
-filtered_2024 = filter_data(df_2024, member_column_2024, type_column_2024)
+filtered_2023 = filter_data(df, 2023)
+filtered_2024 = filter_data(df, 2024)
 
 # 총합 계산
 total_2023 = {
-    '명': filtered_2023['2023_총합_명'].sum(),
-    '건': filtered_2023['2023_총합_건'].sum(),
-    '매출': filtered_2023['2023_총합_매출'].sum()
+    '명': filtered_2023['명'].sum(),
+    '건': filtered_2023['건'].sum(),
+    '매출': filtered_2023['매출'].sum()
 }
 total_2024 = {
-    '명': filtered_2024['2024_총합_명'].sum(),
-    '건': filtered_2024['2024_총합_건'].sum(),
-    '매출': filtered_2024['2024_총합_매출'].sum()
+    '명': filtered_2024['명'].sum(),
+    '건': filtered_2024['건'].sum(),
+    '매출': filtered_2024['매출'].sum()
 }
 
 # 📊 총합 변화 카드 스타일 출력
@@ -70,6 +60,7 @@ for idx, metric in enumerate(metrics):
     prev = total_2023[metric]
     curr = total_2024[metric]
     diff = curr - prev
+    growth = ((curr - prev) / prev) * 100 if prev != 0 else 0
     color = "🟢" if diff >= 0 else "🔴"
 
     with kpi_cols[idx]:
@@ -77,17 +68,18 @@ for idx, metric in enumerate(metrics):
         <div style="padding:1rem; border-radius:10px; background-color:#f9f9f9; text-align:center">
             <div style="font-size:14px; color:gray">2023: {int(prev):,} → 2024: {int(curr):,}</div>
             <div style="font-size:24px; font-weight:bold; color:black; margin-top:0.5rem">{diff:+,} {color}</div>
+            <div style="font-size:14px; color:gray; margin-top:0.5rem">📈 성장률: {growth:+.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
 
 # 🧩 매출 비율 (2024)
 st.subheader("🧩 매출 비율 (2024)")
 
+# 원형 차트
 if selected_member == '전체':
     member_sales = {}
     for member in ['일반', '오프셋', '학위논문']:
-        filtered_member = filtered_2024[filtered_2024[member_column_2024] == member]
-        member_sales[member] = filtered_member['2024_총합_매출'].sum()
+        member_sales[member] = df[(df['연도'] == 2024) & (df['주문'] == member)]['매출'].sum()
 
     sales_df = pd.DataFrame({
         '구분': list(member_sales.keys()),
@@ -107,8 +99,7 @@ if selected_member == '전체':
 else:
     type_sales = {}
     for t in ['신규', '기존']:
-        filtered_type = filtered_2024[(filtered_2024[member_column_2024] == selected_member) & (filtered_2024[type_column_2024] == t)]
-        type_sales[t] = filtered_type['2024_총합_매출'].sum()
+        type_sales[t] = df[(df['연도'] == 2024) & (df['주문'] == selected_member) & (df['구분'] == t)]['매출'].sum()
 
     sales_df = pd.DataFrame({
         '구분': list(type_sales.keys()),
@@ -142,40 +133,24 @@ st.subheader("📈 월별 추이 비교 (2023 vs 2024)")
 for metric in metrics:
     chart_data = []
     for month in [4,5,6,7,8,9,10,11,12,1,2,3]:
-        if month >= 4:
-            fiscal_month = month - 3
-        else:
-            fiscal_month = month + 9
+        value_2023 = filtered_2023[filtered_2023['월'] == month][metric].sum()
+        value_2024 = filtered_2024[filtered_2024['월'] == month][metric].sum()
 
-        if month >= 4:
-            col_2023 = f"2023_{month}_{metric}"
-            col_2024 = f"2024_{month}_{metric}"
-        else:
-            col_2023 = f"2024_{month}_{metric}"
-            col_2024 = f"2025_{month}_{metric}"
+        chart_data.append({
+            "표시월": f"{month}월",
+            "구분": "2023회계연도",
+            "값": value_2023,
+            "지표": metric
+        })
 
-        if col_2023 in filtered_2023.columns:
-            value_2023 = pd.to_numeric(filtered_2023[col_2023], errors='coerce').sum()
-            chart_data.append({
-                "회계월": fiscal_month,
-                "표시월": f"{month}월",
-                "구분": "2023회계연도",
-                "값": value_2023,
-                "지표": metric
-            })
-
-        if col_2024 in filtered_2024.columns:
-            value_2024 = pd.to_numeric(filtered_2024[col_2024], errors='coerce').sum()
-            chart_data.append({
-                "회계월": fiscal_month,
-                "표시월": f"{month}월",
-                "구분": "2024회계연도",
-                "값": value_2024,
-                "지표": metric
-            })
+        chart_data.append({
+            "표시월": f"{month}월",
+            "구분": "2024회계연도",
+            "값": value_2024,
+            "지표": metric
+        })
 
     chart_df = pd.DataFrame(chart_data)
-    chart_df = chart_df.sort_values("회계월")
 
     fig = px.line(
         chart_df,
