@@ -3,6 +3,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
+from io import BytesIO
 
 # 페이지 설정
 st.set_page_config(page_title="회원구분별 매출 변화 분석", layout="wide")
@@ -13,7 +15,9 @@ url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel(url, sheet_name=0)
+    response = requests.get(url)
+    bytes_data = BytesIO(response.content)
+    df = pd.read_excel(bytes_data, sheet_name=0)
     return df
 
 df = load_data()
